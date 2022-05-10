@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%; margin: 0;">
+<head>
+  <title>Bubblesets - Cliques</title>
+  <meta charset="utf-8">
+  <!-- bubbleset js  -->
+  <script src="bubblesets.js" charset="utf-8"></script>
+  <!-- d3.js CDN -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<style>
+/* d3 circle popout data */
+div.tooltip {	
+    position: absolute;				
+    width: 300px;					
+    height: 75px;					
+    padding: 7px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+/* label rect */
+img.labelrect {
+    width: 15px;
+    height: 15px;
+    margin: 10px;
+    margin-bottom: auto;
+}
+</style>
+<body>
+</body>
+<script>
+// d3.js start
+var w = 1600, h = 800, padding = 50, radius = 3;
+
+var svg = d3.select('body').append('svg')
+    .style('width', w +'px')
+    .style('height', h + 'px')
+    .attr('class', 'svg')
+
+var rect = d3.select('body').select('svg').append('rect')
+    .style('width', '100%')
+    .style('height', '100%')
+    .style('stroke', 'black')
+    .style('stroke-width', '1')
+    .style('fill', 'none')
+    .attr('class', 'rect')
+
+var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+
+dataurl = "./data/1_top200rev.csv";
+
+d3.csv(dataurl).then((data) => {
+  console.log(data);
+  dataset = data;
+  
+  var Xmax = d3.max(dataset, function(d){return d.budget/1000}),
+      Xmin = d3.min(dataset, function(d){return d.budget/1000});
+  
+  var Ymax = d3.max(dataset, function(d){return d.vote_average}),
+      Ymin = d3.min(dataset, function(d){return d.vote_average});
+  
+  console.log("Xmin:"+Xmin);
+  console.log("Xmax:"+Xmax);
+  console.log("Ymin:"+Ymin);
+  console.log("Ymax:"+Ymax);
+
+  var xScale = d3.scaleLinear()
+      .domain([Xmin, Xmax])
+      .range([padding, w - padding]);
+  
+   yScale = d3.scaleLinear()
+      .domain([Ymin, Ymax])
+      .range([h - padding, padding]);
+
+  svg.selectAll('circle').data(dataset).enter()
+    .append('circle')
+    .attr("r", radius)
+    .attr("cx", (d, i) => xScale(d.budget/1000))
+    .attr("cy", (d, i) => yScale(d.vote_average))
+    .attr("class", (d, i) => d.genres.replaceAll("," , ""))
+    .style("fill", "black")
+    .on("mouseover", function(event, d) {		
+        div.transition()		
+            .duration(200)		
+            .style("opacity", .9);		
+        div.html("Title: " + d.title
+            + "<br/> Budget: " + (d.budget/1000) + "K"
+            + "<br/> Genre: " + d.genres
+            + "<br/> Vote Average: " + d.vote_average
+            + "<br/> Vote Count: " + d.vote_count)	
+            .style("left", (event.pageX) + "px")		
+            .style("top", (event.pageY - 28) + "px");	
+    })					
+    .on("mouseout", function(d) {		
+        div.transition()		
+            .duration(500)		
+            .style("opacity", 0);	
+    });
+
+  var xAxis = d3.axisBottom(xScale)
+  var yAxis = d3.axisLeft(yScale)
+
+  svg.append('g').attr('class', 'axis')
+      .attr('transform', 'translate(0, ' + (h-padding) + ')')
+      .call(xAxis)
+
+  svg.append("text")             
+      .attr("transform",
+            "translate(" + (w/2) + " ," + 
+                           (h-10) + ")")
+      .style("text-anchor", "middle")
+      .text("Budget (Thousand Dollars)");
+  
+  svg.append('g').attr('class', 'axis')
+      .attr('transform', 'translate(' + padding + ', 0)')
+      .call(yAxis)
+
+  svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0)
+      .attr("x",0 - (h / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Average Rating");
+
+  // run bubble set IMMEDIATELY after d3.js finish (because d3.csv is asyncronous)
+  startBubbleSet();
+}) // d3.js end
+
+// Generate Random Color distinguishable to Humans
+function makeColor(colorNum, colors) {
+    if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
+    return colorNum * (360 / colors) % 360;
+}
+
+// bubble-sets start
+function startBubbleSet() {
+    // generate bubble sets, variable of bubblesets
+    var pad = 0.1;
+    var nodesize = 0.05;
+    var bubbles = new BubbleSet();
+
+    var svgnode = document.getElementsByClassName('svg')[0];
+    var rectnode = document.getElementsByClassName('rect')[0];
+    var bodynode = document.getElementsByTagName('body')[0];
+
+    var genres = ['Music', 'Romance', 'Family', 'War', 'Foreign', 'TV Movie', 'Adventure', 'Fantasy', 'Animation', 'Drama', 'Horror', 'Action', 'Comedy', 'History', 'Western', 'Thriller', 'Crime', 'Science Fiction', 'Mystery', 'Documentary'];
+    var paths = [];
+    var pointSets = [];
+    var totalColors = genres.length;
+
+    // Generate paths and colors of paths by Genres
+    genres.forEach(function callback(genre, index) {
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.id = genre;
+        path.setAttributeNS(null, "fill", "hsl(" + makeColor(index, totalColors) + ", 100%, 50% )");
+        path.setAttributeNS(null, "opacity", 0.5);
+        path.setAttributeNS(null, "stroke", "black");
+        paths.push(path);
+        // insert before circle to not block the data popout
+        svgnode.insertBefore(path, rectnode);
+        
+        // each genre 1 rectangle
+        set = []
+        pointSets.push(set);
+    })
+
+    console.log(paths);
+    console.log(pointSets);
+
+    // give every node of data a coord & type to use in bubble-sets
+    var nodeList = document.getElementsByTagName('svg')[0].childNodes;
+    console.log(nodeList);
+
+    // add every circle coordinate of d3.js to list
+    nodeList.forEach(function(node, index) {
+        if (node.nodeName == "circle") {
+            var coords = {
+                "x": node.cx.baseVal.value,
+                "y": node.cy.baseVal.value,
+                "width": nodesize,
+                "height": nodesize
+            };
+            // iterate every genre of node
+            genres.forEach(function callback(genre, index) {
+                if (node.className.baseVal.includes(genre)){
+                    var gIndex = genres.indexOf(genre);
+                    if(gIndex != -1) pointSets[gIndex].push(coords);
+                }
+            })
+        }
+    });
+
+    console.log(pointSets);
+
+    // make a path of bubble set
+    function doBubbles(points, others, elem) {
+        var list = bubbles.createOutline(
+            BubbleSet.addPadding(points, pad),
+            BubbleSet.addPadding(others, pad),
+            null
+        );
+        var outline = new PointPath(list).transform([
+            new ShapeSimplifier(0.0),
+            new BSplineShapeGenerator(),
+            new ShapeSimplifier(0.0),
+        ]);
+        elem.setAttributeNS(null, "d", outline);
+        // hide bubbleset at start
+        elem.style.display = "none";
+    }
+
+    function getOtherSets(targetSet, allSets){
+        let otherSets = [];
+        allSets.forEach(function callback(set, index){
+            if(targetSet != set) otherSets = [...otherSets, ...set];
+        });
+        return otherSets;
+    }
+
+    // run every path
+    pointSets.forEach(function callback(set, index){
+        let otherSets = getOtherSets(set, pointSets);
+        let path = paths[index];
+        doBubbles(set, otherSets, path);
+    })
+    // bubble sets generated
+
+    // give every genre/path a checkbox
+
+    bodynode.append(document.createElement('br'));
+    var divnode = document.createElement('div');
+    divnode.style.display = "flex";
+    bodynode.append(divnode);
+    bodynode.append(document.createElement('br'));
+    var divnode2 = document.createElement('div');
+    divnode2.style.display = "flex";
+    bodynode.append(divnode2);
+
+    paths.forEach(function callback(path, index){
+        var checkbox = document.createElement('input');
+        checkbox.type = "checkbox";
+        checkbox.addEventListener('click', function(event){
+            let path = document.getElementById(genres[index]);
+            if(checkbox.checked) path.style.display = "initial";
+            else path.style.display = "none";
+        })
+        if(index % 3 == 1) checkbox.click();
+
+        var label = document.createElement('label')
+        label.appendChild(document.createTextNode(genres[index]));
+
+        var rect = document.createElement('img');
+        rect.className = "labelrect";
+        rect.style.backgroundColor = "hsl(" + makeColor(index, totalColors) + ", 100%, 50% )";
+        
+        var div = document.createElement('div');
+        div.style.flex = 1;
+        if(index < 10) divnode.appendChild(div);
+        else divnode2.appendChild(div);
+
+        div.appendChild(checkbox);
+        div.appendChild(rect);
+        div.appendChild(label);
+        div.appendChild(document.createElement('br'));
+    });
+}
+
+</script>
+
+</body>
+</html>

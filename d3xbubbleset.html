@@ -23,9 +23,9 @@ div.tooltip {
 }
 /* label rect */
 img.labelrect {
-    width: 15px;
-    height: 15px;
-    margin: 10px;
+    width: 12px;
+    height: 12px;
+    margin: 8px;
     margin-bottom: auto;
 }
 </style>
@@ -33,7 +33,7 @@ img.labelrect {
 </body>
 <script>
 // d3.js start
-var w = 1600, h = 800, padding = 50, radius = 3;
+var w = 1400, h = 700, padding = 50, radius = 3;
 
 var svg = d3.select('body').append('svg')
     .style('width', w +'px')
@@ -237,10 +237,21 @@ function startBubbleSet() {
     var divnode = document.createElement('div');
     divnode.style.display = "flex";
     bodynode.append(divnode);
+
     bodynode.append(document.createElement('br'));
     var divnode2 = document.createElement('div');
     divnode2.style.display = "flex";
     bodynode.append(divnode2);
+
+    bodynode.append(document.createElement('br'));
+    var divnode3 = document.createElement('div');
+    divnode3.style.display = "flex";
+    bodynode.append(divnode3);
+
+    bodynode.append(document.createElement('br'));
+    var divnode4 = document.createElement('div');
+    divnode4.style.display = "flex";
+    bodynode.append(divnode4);
 
     paths.forEach(function callback(path, index){
         var checkbox = document.createElement('input');
@@ -261,8 +272,10 @@ function startBubbleSet() {
         
         var div = document.createElement('div');
         div.style.flex = 1;
-        if(index < 10) divnode.appendChild(div);
-        else divnode2.appendChild(div);
+        if(index < 5) divnode.appendChild(div);
+        else if(index < 10) divnode2.appendChild(div);
+        else if(index < 15) divnode3.appendChild(div);
+        else divnode4.appendChild(div);
 
         div.appendChild(checkbox);
         div.appendChild(rect);

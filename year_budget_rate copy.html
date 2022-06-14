@@ -13,22 +13,31 @@
     /* d3 circle popout data */
     div.tooltip {
         position: absolute;
-        width: 300px;
-        height: 75px;
-        padding: 7px;
-        font: 12px sans-serif;
+        width: 750px;
+        padding: 17px;
+        font: 30px sans-serif;
         background: lightsteelblue;
         border: 0px;
-        border-radius: 8px;
+        border-radius: 20px;
         pointer-events: none;
     }
 
     /* label rect */
     img.labelrect {
-        width: 12px;
-        height: 12px;
-        margin: 8px;
+        width: 30px;
+        height: 30px;
+        margin: 20px;
         margin-bottom: auto;
+    }
+
+    /* scale to resize iframe of mainpage */
+    body {
+        transform-origin: top left;
+        transform: scale(0.47);
+    }
+
+    input[type="checkbox"] {
+        transform:scale(3);
     }
 </style>
 
@@ -36,7 +45,8 @@
 </body>
 <script>
     // d3.js start
-    var w = 2800, h = 1400, padding = 50, radius = 3;
+    var mult = 2.5;
+    var w = 1400*mult, h = 700*mult, padding = 50, radius = 5;
 
     var svg = d3.select('body').append('svg')
         .style('width', w + 'px')

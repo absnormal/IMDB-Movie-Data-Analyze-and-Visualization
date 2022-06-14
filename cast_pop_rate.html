@@ -79,6 +79,7 @@
 
     dataurl = "./data/top_cast.csv";
 
+
     // Generate Random Color distinguishable to Humans
     function makeColor(colorNum, colors) {
         if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
@@ -88,18 +89,12 @@
     d3.csv(dataurl).then((data) => {
         console.log(data);
         dataset = data;
+        dataset2 = data;
 
-        // var Xmax = d3.max(dataset, function (d) { return d.popularity }),
-        //     Xmin = d3.min(dataset, function (d) { return d.popularity });
         var Xmax = 220, Xmin = 3
 
         var Ymax = d3.max(dataset, function (d) { return d.vote_average }),
             Ymin = d3.min(dataset, function (d) { return d.vote_average });
-
-        console.log("Xmin:" + Xmin);
-        console.log("Xmax:" + Xmax);
-        console.log("Ymin:" + Ymin);
-        console.log("Ymax:" + Ymax);
 
         var xScale = d3.scaleLog()
             .domain([Xmin, Xmax])
@@ -110,16 +105,21 @@
             .range([h - padding, padding]);
 
         // color circle for bubbleSet
-        svg.selectAll('circle').data(dataset).enter()
+        svg.selectAll('text.labels').data(dataset).enter()
             .append('circle')
+            // make smallest vs larger 1:5
             .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
             .attr("cx", (d, i) => xScale(d.popularity))
             .attr("cy", (d, i) => yScale(d.vote_average))
             .attr("class", (d, i) => d.cast_names.replaceAll("," , ""))
             .attr("style", (d, i) => "fill: hsl(" + makeColor(group_names.indexOf(d.cast_names), totalGroups) + ", 100%, 50% )");
 
+        svg.append('path')
+            .attr("class", "border")
+            .attr("opacity", 0);
+
         // invisible circle for tooltop
-        svg.selectAll('circle').data(dataset).enter()
+        svg.selectAll('text.values').data(dataset2).enter()
             .append('circle')
             .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
             .attr("cx", (d, i) => xScale(d.popularity))
@@ -130,7 +130,7 @@
                     .duration(200)
                     .style("opacity", .9)
                     // for scale of mainpage: event.pageXY/body.scale
-                    .style("left", (event.pageX/0.47) + "px")
+                    .style("left", (event.pageX/0.47)-500 + "px")
                     .style("top", (event.pageY/0.47) + "px");
                 h3_title.text(d.title);
                 // group text color
@@ -187,7 +187,7 @@
         var bubbles = new BubbleSet();
 
         var svgnode = document.getElementsByClassName('svg')[0];
-        var rectnode = document.getElementsByClassName('rect')[0];
+        var rectnode = document.getElementsByClassName('border')[0];
         var bodynode = document.getElementsByTagName('body')[0];
 
         var cast_names = ['Bruce Willis', 'Matt Damon', 'Nicolas Cage', 'Robert De Niro', 'Samuel L Jackson'];
@@ -203,7 +203,8 @@
             path.setAttributeNS(null, "opacity", 0.5);
             path.setAttributeNS(null, "stroke", "black");
             paths.push(path);
-            svgnode.append(path);
+            // insert before border of invisible circles for tooltips
+            svgnode.insertBefore(path, rectnode);
 
             // each cast_name 1 rectangle
             set = []
@@ -305,8 +306,6 @@
                     path.style.display = "initial";
                     path.style.opacity = 0.6;
                     path.style.stroke = "black"
-                    svgnode.removeChild(path);
-                    svgnode.append(path);
                 } else {
                     path.style.display = "initial";
                     path.style.opacity = 0.3;

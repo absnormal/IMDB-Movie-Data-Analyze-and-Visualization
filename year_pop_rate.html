@@ -13,22 +13,31 @@
     /* d3 circle popout data */
     div.tooltip {
         position: absolute;
-        width: 300px;
-        height: 75px;
-        padding: 7px;
-        font: 12px sans-serif;
+        width: 750px;
+        padding: 17px;
+        font: 30px sans-serif;
         background: lightsteelblue;
         border: 0px;
-        border-radius: 8px;
+        border-radius: 20px;
         pointer-events: none;
     }
 
     /* label rect */
     img.labelrect {
-        width: 12px;
-        height: 12px;
-        margin: 8px;
+        width: 30px;
+        height: 30px;
+        margin: 20px;
         margin-bottom: auto;
+    }
+
+    /* scale to resize iframe of mainpage */
+    body {
+        transform-origin: top left;
+        transform: scale(0.47);
+    }
+
+    input[type="checkbox"] {
+        transform:scale(3);
     }
 </style>
 
@@ -36,7 +45,9 @@
 </body>
 <script>
     // d3.js start
-    var w = 2800, h = 1400, padding = 50, radius = 3;
+    var mult = 2.5;
+    var w = 1400*mult, h = 700*mult, padding = 50
+    var minRadius = 5;
 
     var svg = d3.select('body').append('svg')
         .style('width', w + 'px')
@@ -51,27 +62,39 @@
         .style('fill', 'none')
         .attr('class', 'rect')
 
+    // data hover popout tooltips
     var div = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
+    var h3_title = div.append("h2")
+        .style("text-align", "center");
+    var h4_group = div.append("h4")
+        .style("text-align", "center");
+    var p_xAxis = div.append("p")
+    var p_yAxis = div.append("p")
+    var p_dotSize = div.append("p")
+
+    var group_names = ['before_2000', '2001~2005', '2006~2010', '2011~2016'];
+    var totalGroups = group_names.length;
 
     dataurl = "./data/tmdb_5000_movies_cleaned_year.csv";
+
+
+    // Generate Random Color distinguishable to Humans
+    function makeColor(colorNum, colors) {
+        if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
+        return colorNum * (360 / colors) % 360;
+    }
 
     d3.csv(dataurl).then((data) => {
         console.log(data);
         dataset = data;
+        dataset2 = data;
 
-        // var Xmax = d3.max(dataset, function (d) { return d.popularity }),
-        //     Xmin = d3.min(dataset, function (d) { return d.popularity });
         var Xmax = 170, Xmin = 3
 
         var Ymax = d3.max(dataset, function (d) { return d.vote_average }),
             Ymin = d3.min(dataset, function (d) { return d.vote_average });
-
-        console.log("Xmin:" + Xmin);
-        console.log("Xmax:" + Xmax);
-        console.log("Ymin:" + Ymin);
-        console.log("Ymax:" + Ymax);
 
         var xScale = d3.scaleLinear()
             .domain([Xmin, Xmax])
@@ -81,24 +104,41 @@
             .domain([Ymin, Ymax])
             .range([h - padding, padding]);
 
-        svg.selectAll('circle').data(dataset).enter()
+        // color circle for bubbleSet
+        svg.selectAll('text.labels').data(dataset).enter()
             .append('circle')
-            .attr("r", radius)
+            // make smallest vs larger 1:5
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
             .attr("cx", (d, i) => xScale(d.popularity))
             .attr("cy", (d, i) => yScale(d.vote_average))
             .attr("class", (d, i) => d.release_year.replaceAll("," , ""))
-            .style("fill", "black")
+            .attr("style", (d, i) => "fill: hsl(" + makeColor(group_names.indexOf(d.release_year), totalGroups) + ", 100%, 50% )");
+
+        svg.append('path')
+            .attr("class", "border")
+            .attr("opacity", 0);
+
+        // invisible circle for tooltop
+        svg.selectAll('text.values').data(dataset2).enter()
+            .append('circle')
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
+            .attr("cx", (d, i) => xScale(d.popularity))
+            .attr("cy", (d, i) => yScale(d.vote_average))
+            .attr("style", "opacity: 0")
             .on("mouseover", function (event, d) {
                 div.transition()
                     .duration(200)
-                    .style("opacity", .9);
-                div.html("Title: " + d.title
-                    + "<br/> Budget: " + (d.budget / 1000) + "K"
-                    + "<br/> Genre: " + d.genres
-                    + "<br/> Vote Average: " + d.vote_average
-                    + "<br/> Vote Count: " + d.vote_count)
-                    .style("left", (event.pageX) + "px")
-                    .style("top", (event.pageY - 28) + "px");
+                    .style("opacity", .9)
+                    // for scale of mainpage: event.pageXY/body.scale
+                    .style("left", (event.pageX/0.47)-500 + "px")
+                    .style("top", (event.pageY/0.47) + "px");
+                h3_title.text(d.title);
+                // group text color
+                h4_group.text(d.release_year)
+                    .style("color", "hsl(" + makeColor(group_names.indexOf(d.release_year), totalGroups) + ", 100%, 50% )");
+                p_xAxis.text("Popularity: " + Math.round(d.popularity*10)/10);
+                p_yAxis.text("Average Rating: " + d.vote_average);
+                p_dotSize.text("Rate Of Income: " + d.ROI);
             })
             .on("mouseout", function (d) {
                 div.transition()
@@ -145,12 +185,11 @@
     // bubble-sets start
     function startBubbleSet() {
         // generate bubble sets, variable of bubblesets
-        var pad = 0.1;
-        var nodesize = 0.05;
+        var pad = 3;
         var bubbles = new BubbleSet();
 
         var svgnode = document.getElementsByClassName('svg')[0];
-        var rectnode = document.getElementsByClassName('rect')[0];
+        var rectnode = document.getElementsByClassName('border')[0];
         var bodynode = document.getElementsByTagName('body')[0];
 
         var release_years = ['before_2000', '2001~2005', '2006~2010', '2011~2016'];
@@ -166,7 +205,7 @@
             path.setAttributeNS(null, "opacity", 0.5);
             path.setAttributeNS(null, "stroke", "black");
             paths.push(path);
-            // insert before circle to not block the data popout
+            // insert before border of invisible circles for tooltips
             svgnode.insertBefore(path, rectnode);
 
             // each release_year 1 rectangle
@@ -186,10 +225,11 @@
             // console.log(node.className)
             if (node.nodeName == "circle") {
                 var coords = {
-                    "x": node.cx.baseVal.value,
-                    "y": node.cy.baseVal.value,
-                    "width": nodesize,
-                    "height": nodesize
+                    // minus r/2 to x and y (d3 and bubbleSet use different radius)
+                    "x": node.cx.baseVal.value - node.r.baseVal.value/2,
+                    "y": node.cy.baseVal.value - node.r.baseVal.value/2,
+                    "width": node.r.baseVal.value + 2,
+                    "height": node.r.baseVal.value + 2
                 };
                 // iterate every release_year of node
                 release_years.forEach(function callback(release_year, index) {
@@ -263,10 +303,20 @@
             checkbox.type = "checkbox";
             checkbox.addEventListener('click', function (event) {
                 let path = document.getElementById(release_years[index]);
-                if (checkbox.checked) path.style.display = "initial";
-                else path.style.display = "none";
+                path.style.strokeWidth = 5;
+                if (checkbox.checked){
+                    path.style.display = "initial";
+                    path.style.opacity = 0.6;
+                    path.style.stroke = "black"
+                } else {
+                    path.style.display = "initial";
+                    path.style.opacity = 0.3;
+                    path.style.stroke = "hsl(" + makeColor(index, totalColors) + ", 100%, 50% )"
+                }
             })
-            if (index % 3 == 1) checkbox.click();
+            checkbox.click();
+            if(index != 0) checkbox.click();
+
 
             var label = document.createElement('label')
             label.appendChild(document.createTextNode(release_years[index]));

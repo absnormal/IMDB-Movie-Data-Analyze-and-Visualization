@@ -13,22 +13,27 @@
     /* d3 circle popout data */
     div.tooltip {
         position: absolute;
-        width: 300px;
-        height: 75px;
-        padding: 7px;
-        font: 12px sans-serif;
+        width: 750px;
+        padding: 17px;
+        font: 30px sans-serif;
         background: lightsteelblue;
         border: 0px;
-        border-radius: 8px;
+        border-radius: 20px;
         pointer-events: none;
     }
 
     /* label rect */
     img.labelrect {
-        width: 12px;
-        height: 12px;
-        margin: 8px;
+        width: 30px;
+        height: 30px;
+        margin: 20px;
         margin-bottom: auto;
+    }
+
+    /* scale to resize iframe of mainpage */
+    body {
+        transform-origin: top left;
+        transform: scale(0.47);
     }
 </style>
 
@@ -36,7 +41,8 @@
 </body>
 <script>
     // d3.js start
-    var w = 1400, h = 700, padding = 50, radius = 3;
+    var mult = 2.5;
+    var w = 1400*mult, h = 700*mult, padding = 50, radius = 5;
 
     var svg = d3.select('body').append('svg')
         .style('width', w + 'px')
@@ -51,9 +57,13 @@
         .style('fill', 'none')
         .attr('class', 'rect')
 
+    // data hover popout tooltips
     var div = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
+    var h3_title = div.append("h3")
+        .style("text-align", "center");
+    var h5_xAxis = div.append("h5")
 
     dataurl = "./data/top_cast.csv";
 
@@ -91,14 +101,17 @@
             .on("mouseover", function (event, d) {
                 div.transition()
                     .duration(200)
-                    .style("opacity", .9);
-                div.html("Title: " + d.title
-                    + "<br/> Budget: " + (d.budget / 1000) + "K"
-                    + "<br/> Genre: " + d.genres
-                    + "<br/> Vote Average: " + d.vote_average
-                    + "<br/> Vote Count: " + d.vote_count)
-                    .style("left", (event.pageX) + "px")
-                    .style("top", (event.pageY - 28) + "px");
+                    .style("opacity", .9)
+                    // for scale of mainpage: event.pageXY/body.scale
+                    .style("left", (event.pageX/0.47) + "px")
+                    .style("top", (event.pageY/0.47) + "px");
+                h3_title.text(d.title);
+                h5_xAxis.text("Average Rating: " + d.vote_average);
+                // div.html("Title: " + d.original_title
+                //     + "<br/> Vote Average: " + d.vote_average
+                //     + "<br/> Popularity: " + Math.round(d.popularity*10)/10
+                //     + "<br/> Cast: " + d.cast_names
+                //     + "<br/> Rate of Income: " +  d.ROI)
             })
             .on("mouseout", function (d) {
                 div.transition()
@@ -111,6 +124,7 @@
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(0, ' + (h - padding) + ')')
+            .style("font-size", "20px")
             .call(xAxis)
 
         svg.append("text")
@@ -118,10 +132,12 @@
                 "translate(" + (w / 2) + " ," +
                 (h - 10) + ")")
             .style("text-anchor", "middle")
+            .style("font-size", "30px")
             .text("popularity");
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(' + padding + ', 0)')
+            .style("font-size", "20px")
             .call(yAxis)
 
         svg.append("text")
@@ -130,7 +146,8 @@
             .attr("x", 0 - (h / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Average Rating");
+            .style("font-size", "30px")
+            .text("Average . . Rating");
 
         // run bubble set IMMEDIATELY after d3.js finish (because d3.csv is asyncronous)
         startBubbleSet();
@@ -145,8 +162,8 @@
     // bubble-sets start
     function startBubbleSet() {
         // generate bubble sets, variable of bubblesets
-        var pad = 0.1;
-        var nodesize = 0.05;
+        var pad = 3;
+        var nodesize = 1;
         var bubbles = new BubbleSet();
 
         var svgnode = document.getElementsByClassName('svg')[0];
@@ -266,7 +283,7 @@
                 if (checkbox.checked) path.style.display = "initial";
                 else path.style.display = "none";
             })
-            if (index % 3 == 1) checkbox.click();
+            checkbox.click();
 
             var label = document.createElement('label')
             label.appendChild(document.createTextNode(cast_names[index]));
@@ -288,6 +305,8 @@
             div.appendChild(document.createElement('br'));
         });
     }
+
+
 
 </script>
 

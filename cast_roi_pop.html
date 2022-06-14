@@ -30,13 +30,20 @@
         margin: 8px;
         margin-bottom: auto;
     }
+
+    /* scale to resize iframe of mainpage */
+    body {
+        transform-origin: top left;
+        transform: scale(0.47);
+    }
 </style>
 
 <body>
 </body>
 <script>
     // d3.js start
-    var w = 1400, h = 700, padding = 50, radius = 3;
+    var mult = 2.5;
+    var w = 1400*mult, h = 700*mult, padding = 50, radius = 5;
 
     var svg = d3.select('body').append('svg')
         .style('width', w + 'px')
@@ -98,8 +105,9 @@
                     + "<br/> Genre: " + d.genres
                     + "<br/> Vote Average: " + d.vote_average
                     + "<br/> Vote Count: " + d.vote_count)
-                    .style("left", (event.pageX) + "px")
-                    .style("top", (event.pageY - 28) + "px");
+                    // for scale of mainpage: event.pageXY/body.scale + modify
+                    .style("left", (event.pageX/0.47) + "px")
+                    .style("top", (event.pageY/0.47) + "px");
 
             })
             .on("mouseout", function (d) {
@@ -113,25 +121,29 @@
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(0, ' + (h - padding) + ')')
+            .style("font-size", "20px")
             .call(xAxis)
 
         svg.append("text")
             .attr("transform",
                 "translate(" + (w / 2) + " ," +
-                (h - 10) + ")")
+                (h - 1) + ")")
             .style("text-anchor", "middle")
+            .style("font-size", "30px")
             .text("ROI");
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(' + padding + ', 0)')
+            .style("font-size", "20px")
             .call(yAxis)
 
         svg.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 0)
-            .attr("x", 0 - (h / 2))
+            .attr("x", 30 - (h / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
+            .style("font-size", "30px")
             .text("Popularity");
 
         // run bubble set IMMEDIATELY after d3.js finish (because d3.csv is asyncronous)
@@ -147,8 +159,8 @@
     // bubble-sets start
     function startBubbleSet() {
         // generate bubble sets, variable of bubblesets
-        var pad = 0.1;
-        var nodesize = 0.05;
+        var pad = 3;
+        var nodesize = 1;
         var bubbles = new BubbleSet();
 
         var svgnode = document.getElementsByClassName('svg')[0];
@@ -268,7 +280,7 @@
                 if (checkbox.checked) path.style.display = "initial";
                 else path.style.display = "none";
             })
-            if (index % 3 == 1) checkbox.click();
+            checkbox.click();
 
             var label = document.createElement('label')
             label.appendChild(document.createTextNode(cast_names[index]));

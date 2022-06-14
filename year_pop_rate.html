@@ -151,6 +151,7 @@
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(0, ' + (h - padding) + ')')
+            .style("font-size", "20px")
             .call(xAxis)
 
         svg.append("text")
@@ -158,10 +159,12 @@
                 "translate(" + (w / 2) + " ," +
                 (h - 10) + ")")
             .style("text-anchor", "middle")
+            .style("font-size", "30px")
             .text("popularity");
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(' + padding + ', 0)')
+            .style("font-size", "20px")
             .call(yAxis)
 
         svg.append("text")
@@ -170,6 +173,7 @@
             .attr("x", 0 - (h / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
+            .style("font-size", "30px")
             .text("Average Rating");
 
         // run bubble set IMMEDIATELY after d3.js finish (because d3.csv is asyncronous)

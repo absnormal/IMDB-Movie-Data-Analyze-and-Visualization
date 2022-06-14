@@ -84,7 +84,8 @@
             .domain([Xmin, Xmax])
             .range([padding, w - padding]);
 
-        yScale = d3.scaleLinear()
+        // yScale = d3.scaleLinear()
+        yScale = d3.scaleLog()
             .domain([Ymin, Ymax])
             .range([h - padding, padding]);
 

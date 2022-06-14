@@ -91,7 +91,7 @@
 
         // var Xmax = d3.max(dataset, function (d) { return d.popularity }),
         //     Xmin = d3.min(dataset, function (d) { return d.popularity });
-        var Xmax = 170, Xmin = 3
+        var Xmax = 220, Xmin = 3
 
         var Ymax = d3.max(dataset, function (d) { return d.vote_average }),
             Ymin = d3.min(dataset, function (d) { return d.vote_average });
@@ -101,7 +101,7 @@
         console.log("Ymin:" + Ymin);
         console.log("Ymax:" + Ymax);
 
-        var xScale = d3.scaleLinear()
+        var xScale = d3.scaleLog()
             .domain([Xmin, Xmax])
             .range([padding, w - padding]);
 

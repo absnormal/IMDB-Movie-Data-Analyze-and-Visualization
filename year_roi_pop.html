@@ -92,7 +92,7 @@
         dataset2 = data;
 
         var Xmax = 100, Xmin = -100
-        var Ymax = 170, Ymin = 3
+        var Ymax = 875/*175*/, Ymin = 3
 
         var xScale = d3.scaleLinear()
             .domain([Xmin, Xmax])
@@ -129,7 +129,7 @@
                     .style("opacity", .9)
                     // for scale of mainpage: event.pageXY/body.scale
                     .style("left", (event.pageX/0.47)-500 + "px")
-                    .style("top", (event.pageY/0.47) + "px");
+                    .style("top", (event.pageY/0.47)-100 + "px");
                 h3_title.text(d.title);
                 // group text color
                 h4_group.text(d.release_year)

@@ -91,7 +91,7 @@
         dataset = data;
         dataset2 = data;
 
-        var Xmax = 170, Xmin = 3
+        var Xmax = 875/*170*/, Xmin = 3
 
         var Ymax = d3.max(dataset, function (d) { return d.vote_average }),
             Ymin = d3.min(dataset, function (d) { return d.vote_average });
@@ -130,7 +130,7 @@
                     .duration(200)
                     .style("opacity", .9)
                     // for scale of mainpage: event.pageXY/body.scale
-                    .style("left", (event.pageX/0.47)-500 + "px")
+                    .style("left", (event.pageX/0.47) + "px")
                     .style("top", (event.pageY/0.47) + "px");
                 h3_title.text(d.title);
                 // group text color

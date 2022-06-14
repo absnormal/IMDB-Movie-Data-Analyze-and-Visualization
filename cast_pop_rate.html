@@ -35,6 +35,10 @@
         transform-origin: top left;
         transform: scale(0.47);
     }
+
+    input[type="checkbox"] {
+        transform:scale(3);
+    }
 </style>
 
 <body>
@@ -42,7 +46,8 @@
 <script>
     // d3.js start
     var mult = 2.5;
-    var w = 1400*mult, h = 700*mult, padding = 50, radius = 5;
+    var w = 1400*mult, h = 700*mult, padding = 50
+    var minRadius = 5;
 
     var svg = d3.select('body').append('svg')
         .style('width', w + 'px')
@@ -61,11 +66,24 @@
     var div = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
-    var h3_title = div.append("h3")
+    var h3_title = div.append("h2")
         .style("text-align", "center");
-    var h5_xAxis = div.append("h5")
+    var h4_group = div.append("h4")
+        .style("text-align", "center");
+    var p_xAxis = div.append("p")
+    var p_yAxis = div.append("p")
+    var p_dotSize = div.append("p")
+
+    var group_names = ['Bruce Willis', 'Matt Damon', 'Nicolas Cage', 'Robert De Niro', 'Samuel L Jackson'];
+    var totalGroups = group_names.length;
 
     dataurl = "./data/top_cast.csv";
+
+    // Generate Random Color distinguishable to Humans
+    function makeColor(colorNum, colors) {
+        if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
+        return colorNum * (360 / colors) % 360;
+    }
 
     d3.csv(dataurl).then((data) => {
         console.log(data);
@@ -91,13 +109,22 @@
             .domain([Ymin, Ymax])
             .range([h - padding, padding]);
 
+        // color circle for bubbleSet
         svg.selectAll('circle').data(dataset).enter()
             .append('circle')
-            .attr("r", radius)
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
             .attr("cx", (d, i) => xScale(d.popularity))
             .attr("cy", (d, i) => yScale(d.vote_average))
             .attr("class", (d, i) => d.cast_names.replaceAll("," , ""))
-            .style("fill", "black")
+            .attr("style", (d, i) => "fill: hsl(" + makeColor(group_names.indexOf(d.cast_names), totalGroups) + ", 100%, 50% )");
+
+        // invisible circle for tooltop
+        svg.selectAll('circle').data(dataset).enter()
+            .append('circle')
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
+            .attr("cx", (d, i) => xScale(d.popularity))
+            .attr("cy", (d, i) => yScale(d.vote_average))
+            .attr("style", "opacity: 0")
             .on("mouseover", function (event, d) {
                 div.transition()
                     .duration(200)
@@ -106,12 +133,12 @@
                     .style("left", (event.pageX/0.47) + "px")
                     .style("top", (event.pageY/0.47) + "px");
                 h3_title.text(d.title);
-                h5_xAxis.text("Average Rating: " + d.vote_average);
-                // div.html("Title: " + d.original_title
-                //     + "<br/> Vote Average: " + d.vote_average
-                //     + "<br/> Popularity: " + Math.round(d.popularity*10)/10
-                //     + "<br/> Cast: " + d.cast_names
-                //     + "<br/> Rate of Income: " +  d.ROI)
+                // group text color
+                h4_group.text(d.cast_names)
+                    .style("color", "hsl(" + makeColor(group_names.indexOf(d.cast_names), totalGroups) + ", 100%, 50% )");
+                p_xAxis.text("Average Rating: " + d.vote_average);
+                p_yAxis.text("Popularity: " + Math.round(d.popularity*10)/10);
+                p_dotSize.text("Rate Of Income: " + d.ROI);
             })
             .on("mouseout", function (d) {
                 div.transition()
@@ -153,17 +180,10 @@
         startBubbleSet();
     }) // d3.js end
 
-    // Generate Random Color distinguishable to Humans
-    function makeColor(colorNum, colors) {
-        if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
-        return colorNum * (360 / colors) % 360;
-    }
-
     // bubble-sets start
     function startBubbleSet() {
         // generate bubble sets, variable of bubblesets
         var pad = 3;
-        var nodesize = 1;
         var bubbles = new BubbleSet();
 
         var svgnode = document.getElementsByClassName('svg')[0];
@@ -183,8 +203,7 @@
             path.setAttributeNS(null, "opacity", 0.5);
             path.setAttributeNS(null, "stroke", "black");
             paths.push(path);
-            // insert before circle to not block the data popout
-            svgnode.insertBefore(path, rectnode);
+            svgnode.append(path);
 
             // each cast_name 1 rectangle
             set = []
@@ -201,12 +220,13 @@
         // add every circle coordinate of d3.js to list
         nodeList.forEach(function (node, index) {
             // console.log(node.className)
-            if (node.nodeName == "circle") {
+            if (node.nodeName == "circle" && node.className != null) {
                 var coords = {
-                    "x": node.cx.baseVal.value,
-                    "y": node.cy.baseVal.value,
-                    "width": nodesize,
-                    "height": nodesize
+                    // minus r/2 to x and y (d3 and bubbleSet use different radius)
+                    "x": node.cx.baseVal.value - node.r.baseVal.value/2,
+                    "y": node.cy.baseVal.value - node.r.baseVal.value/2,
+                    "width": node.r.baseVal.value + 2,
+                    "height": node.r.baseVal.value + 2
                 };
                 // iterate every cast_name of node
                 cast_names.forEach(function callback(cast_name, index) {
@@ -274,16 +294,28 @@
         var divnode4 = document.createElement('div');
         divnode4.style.display = "flex";
         bodynode.append(divnode4);
-
+        
         paths.forEach(function callback(path, index) {
             var checkbox = document.createElement('input');
             checkbox.type = "checkbox";
             checkbox.addEventListener('click', function (event) {
                 let path = document.getElementById(cast_names[index]);
-                if (checkbox.checked) path.style.display = "initial";
-                else path.style.display = "none";
+                path.style.strokeWidth = 5;
+                if (checkbox.checked){
+                    path.style.display = "initial";
+                    path.style.opacity = 0.6;
+                    path.style.stroke = "black"
+                    svgnode.removeChild(path);
+                    svgnode.append(path);
+                } else {
+                    path.style.display = "initial";
+                    path.style.opacity = 0.3;
+                    path.style.stroke = "hsl(" + makeColor(index, totalColors) + ", 100%, 50% )"
+                }
             })
             checkbox.click();
+            if(index != 0) checkbox.click();
+            
 
             var label = document.createElement('label')
             label.appendChild(document.createTextNode(cast_names[index]));

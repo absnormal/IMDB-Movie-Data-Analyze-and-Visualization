@@ -39,6 +39,10 @@
     input[type="checkbox"] {
         transform:scale(3);
     }
+
+    label {
+        font-size: 2em;
+    }
 </style>
 
 <body>
@@ -91,12 +95,12 @@
         dataset = data;
         dataset2 = data;
 
-        var Xmax = 875/*170*/, Xmin = 3
+        var Xmax = 1000/*170*/, Xmin = 2
 
         var Ymax = d3.max(dataset, function (d) { return d.vote_average }),
             Ymin = d3.min(dataset, function (d) { return d.vote_average });
 
-        var xScale = d3.scaleLinear()
+        var xScale = d3.scaleLog()
             .domain([Xmin, Xmax])
             .range([padding, w - padding]);
 

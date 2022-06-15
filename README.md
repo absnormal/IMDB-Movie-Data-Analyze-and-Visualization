@@ -3,7 +3,8 @@ Plot of ![Movie Recommendation Dataset](https://www.kaggle.com/code/kamaleshsah/
 Implemented by ![d3.js](https://github.com/d3/d3) and ![BubbleSets](https://github.com/JosuaKrause/bubblesets-js)
 
 ## Grouping
-- casts / years
+- casts
+- years
 
 ## Other Data
 - Rate of Income

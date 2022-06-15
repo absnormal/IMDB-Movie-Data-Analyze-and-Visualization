@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>IMDB電影資訊分析與視覺化</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -12,8 +12,18 @@
   <link rel="stylesheet" href="./mainPage.css" />
   <script src="./mainPage.js" charset="utf-8"></script>
 
+  <style>
+    .center {
+      position: fixed; /* or absolute */
+      top: 50%;
+      left: 30%;
+    }
+  </style>
 </head>
 <body>
+    <div class="row justify-content-center">
+      <h1 class="text-center">IMDB電影資訊分析與視覺化</h1>
+    </div>
     <div class="row">
       <div class="col-1">
         <div class="side-bar">
@@ -32,10 +42,15 @@
         </div>
       </div>
 
-      <div class="col-11">
-        <div id="main-content"></div>
+      <div class="col-11 h-100">
+        <div id="main-content">
+          <span class="center">
+            <h2>⬅請點擊左邊選項以呈現圖表</h2>
+          </span>
+        </div>
       </div>
     </div>
+
 
 </body>
 </html>

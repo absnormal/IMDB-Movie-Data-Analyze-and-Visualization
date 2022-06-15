@@ -139,9 +139,9 @@
                 // group text color
                 h4_group.text(d.release_year)
                     .style("color", "hsl(" + makeColor(group_names.indexOf(d.release_year), totalGroups) + ", 100%, 50% )");
-                p_xAxis.text("Rate Of Income: " + d.ROI);
-                p_yAxis.text("Average Rating: " + d.vote_average);
-                p_dotSize.text("Popularity: " + Math.round(d.popularity*10)/10);
+                p_xAxis.text("[ X ] Rate Of Income: " + d.ROI);
+                p_yAxis.text("[ Y ] Average Rating: " + d.vote_average);
+                p_dotSize.text("[ S ] Popularity: " + Math.round(d.popularity*10)/10);
             })
             .on("mouseout", function (d) {
                 div.transition()

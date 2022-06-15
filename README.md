@@ -4,14 +4,14 @@ Implemented by [d3.js](https://github.com/d3/d3) and [BubbleSets-js](https://git
 
 Active github page [here](https://absnormal.github.io/bubblesets-js/)
 
-## Grouping
+## Plot
+![image](https://github.com/absnormal/bubblesets-js/blob/master/screenshot.png)
+
+### Grouping
 - casts
 - years
 
-## Other Data
+### Other Data
 - Rate of Income
 - Average Rate
 - Populatiry
-
-## Plot
-![image](https://github.com/absnormal/bubblesets-js/blob/master/screenshot.png)

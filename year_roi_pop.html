@@ -39,6 +39,9 @@
     input[type="checkbox"] {
         transform:scale(3);
     }
+    label {
+        font-size: 2em;
+    }
 </style>
 
 <body>
@@ -92,13 +95,13 @@
         dataset2 = data;
 
         var Xmax = 100, Xmin = -100
-        var Ymax = 875/*175*/, Ymin = 3
+        var Ymax = 875/*175*/, Ymin = 1
 
         var xScale = d3.scaleLinear()
             .domain([Xmin, Xmax])
             .range([padding, w - padding]);
 
-        yScale = d3.scaleLinear()
+        yScale = d3.scaleLog()
             .domain([Ymin, Ymax])
             .range([h - padding, padding]);
 

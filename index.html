@@ -1,150 +1,56 @@
 <!DOCTYPE html>
-<html lang="en" style="height: 100%; margin: 0;">
+<html lang="en">
 <head>
-  <title>Bubblesets - Example</title>
-  <meta charset="utf-8">
-  <script src="bubblesets.js" charset="utf-8"></script>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMDB電影資訊分析與視覺化</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="./mainPage.css" />
+  <script src="./mainPage.js" charset="utf-8"></script>
+
+  <style>
+    .center {
+      position: fixed; /* or absolute */
+      top: 50%;
+      left: 30%;
+    }
+  </style>
 </head>
-<body onload="start()" style="width: 100vw; height: 90vh; margin: 0; padding: 0; text-align: center;">
+<body>
+    <div class="row justify-content-center">
+      <h1 class="text-center">IMDB電影資訊分析與視覺化</h1>
+    </div>
+    <div class="row">
+      <div class="col-1">
+        <div class="side-bar">
+          <nav class="navigation">
+            <ul>
+              <li>
+                <a href="#" onclick="changeContent('cast_pop_rate.html')">cast_pop_rate</a>
+                <a href="#" onclick="changeContent('cast_roi_pop.html')">cast_roi_pop</a>
+                <a href="#" onclick="changeContent('cast_roi_rate.html')">cast_roi_rate</a>
+                <a href="#" onclick="changeContent('year_pop_rate.html')">year_pop_rate</a>
+                <a href="#" onclick="changeContent('year_roi_pop.html')">year_roi_pop</a>
+                <a href="#" onclick="changeContent('year_roi_rate.html')">year_roi_rate</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
 
-<h3>Bubblesets for JavaScript</h3>
-<p>Add rectangles by clicking with the left or right mouse button on the canvas. <a href="https://github.com/JosuaKrause/bubblesets-js">GitHub Repository</a></p>
-<svg id="main" style="width: 90vw; height: 80vh; margin: 0 auto;">
-  <rect x="0" y="0" width="100%" height="100%" style="stroke: black; stroke-width: 1; fill: none;"></rect>
-</svg>
+      <div class="col-11 h-100">
+        <div id="main-content">
+          <span class="center">
+            <h2>⬅請點擊左邊選項以呈現圖表</h2>
+          </span>
+        </div>
+      </div>
+    </div>
 
-<script>
-function attr(elem, attr) {
-  for(key in attr) {
-    var value = attr[key];
-    if(value === null) {
-      elem.removeAttribute(key);
-    } else {
-      elem.setAttribute(key, value);
-    }
-  }
-}
-
-function style(elem, style) {
-  for(key in style) {
-    var value = style[key];
-    if(value === null) {
-      delete elem.style.removeProperty(key);
-    } else {
-      elem.style.setProperty(key, value);
-    }
-  }
-}
-
-function appendSVG(parent, name) {
-  return parent.appendChild(document.createElementNS("http://www.w3.org/2000/svg", name));
-}
-
-function removeAllChilds(parent) {
-  while(parent.firstChild) {
-    parent.removeChild(parent.firstChild);
-  }
-}
-
-function start() {
-  var bubbles = new BubbleSet();
-  var rectanglesA = [];
-  var rectanglesB = [];
-  var main = document.getElementById("main");
-  var items = appendSVG(main, "g");
-  var pathA = appendSVG(main, "path");
-  var pathB = appendSVG(main, "path");
-  var debug = appendSVG(main, "g");
-  bubbles.debug(false);
-  var debugFor = pathA;
-
-  function update() {
-    updateOutline(rectanglesA, rectanglesB, "crimson", pathA);
-    updateOutline(rectanglesB, rectanglesA, "cornflowerblue", pathB);
-  }
-
-  function updateOutline(rectangles, otherRectangles, color, path) {
-    var pad = 5;
-    var list = bubbles.createOutline(
-      BubbleSet.addPadding(rectangles, pad),
-      BubbleSet.addPadding(otherRectangles, pad),
-      null /* lines */
-    );
-    // rectangles need to have the form { x: 0, y: 0, width: 0, height: 0 }
-    // lines need to have the form { x1: 0, x2: 0, y1: 0, y2: 0 }
-    // lines can be null to infer lines between rectangles automatically
-    var outline = new PointPath(list).transform([
-      new ShapeSimplifier(0.0),
-      new BSplineShapeGenerator(),
-      new ShapeSimplifier(0.0),
-    ]);
-    // outline is a path that can be used for the attribute d of a path element
-    attr(path, {
-      "d": outline,
-      "opacity": 0.5,
-      "fill": color,
-      "stroke": "black",
-    });
-    if(bubbles.debug() && path === debugFor) {
-      removeAllChilds(debug);
-      bubbles.debugPotentialArea().forEach(function(r) {
-        var rect = appendSVG(debug, "rect");
-        attr(rect, {
-          x: r.x,
-          y: r.y,
-          width: r.width,
-          height: r.height
-        });
-        var color = r.value === r.threshold ? "0, 0, 0" : r.value > 0 ? "150, 20, 20" : "20, 20, 150";
-        style(rect, {
-          "fill": "rgb(" + color + ")",
-          "opacity": r.value === r.threshold ? 0.5 : Math.min(255, Math.abs(r.value * 40)) / 255.0
-        });
-      });
-    }
-  };
-
-  function addRect(rectangles, color, cx, cy) {
-    var width = 40;
-    var height = 30;
-    var x = cx - width * 0.5;
-    var y = cy - height * 0.5;
-    var elem = appendSVG(items, "rect");
-    attr(elem, {
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-    });
-    style(elem, {
-      "stroke": "black",
-      "stroke-width": 1,
-      "fill": color,
-    });
-    rectangles.push({
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-      elem: elem,
-    });
-    update();
-  }
-
-  main.onclick = function(e) {
-    addRect(rectanglesA, "cornflowerblue", e.offsetX, e.offsetY);
-  };
-  var oldX = Number.NaN;
-  var oldY = Number.NaN;
-  main.oncontextmenu = function(e) {
-    if(oldX === e.offsetX && oldY === e.offsetY) return;
-    oldX = e.offsetX;
-    oldY = e.offsetY;
-    addRect(rectanglesB, "crimson", e.offsetX, e.offsetY);
-    e.preventDefault();
-  };
-}
-</script>
 
 </body>
 </html>

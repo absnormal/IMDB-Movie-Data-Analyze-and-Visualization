@@ -80,9 +80,9 @@
     var group_names = ['Bruce Willis', 'Matt Damon', 'Nicolas Cage', 'Robert De Niro', 'Samuel L Jackson'];
     var totalGroups = group_names.length;
 
-    dataurl = "./data/top_cast.csv";
+    dataurl = "../data/top_cast.csv";
 
-    
+
     // Generate Random Color distinguishable to Humans
     function makeColor(colorNum, colors) {
         if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
@@ -94,25 +94,25 @@
         dataset = data;
         dataset2 = data;
 
-        var Xmax = 120, Xmin = -93
+        var Xmax = 250, Xmin = 3
 
         var Ymax = d3.max(dataset, function (d) { return d.vote_average }),
             Ymin = d3.min(dataset, function (d) { return d.vote_average });
 
-        var xScale = d3.scaleLinear()
-            .domain([Xmin-10, Xmax])
+        var xScale = d3.scaleLog()
+            .domain([Xmin, Xmax])
             .range([padding, w - padding]);
 
         yScale = d3.scaleLinear()
-            .domain([Ymin-1, Ymax])
+            .domain([Ymin, Ymax])
             .range([h - padding, padding]);
 
         // color circle for bubbleSet
         svg.selectAll('text.labels').data(dataset).enter()
             .append('circle')
             // make smallest vs larger 1:5
-            .attr("r", (d, i) => (Number(d.popularity)+46.25)/46.25 * minRadius)
-            .attr("cx", (d, i) => xScale(d.ROI))
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
+            .attr("cx", (d, i) => xScale(d.popularity))
             .attr("cy", (d, i) => yScale(d.vote_average))
             .attr("class", (d, i) => d.cast_names.replaceAll("," , ""))
             .attr("style", (d, i) => "fill: hsl(" + makeColor(group_names.indexOf(d.cast_names), totalGroups) + ", 100%, 50% )");
@@ -124,8 +124,8 @@
         // invisible circle for tooltop
         svg.selectAll('text.values').data(dataset2).enter()
             .append('circle')
-            .attr("r", (d, i) => (Number(d.popularity)+46.25)/46.25 * minRadius)
-            .attr("cx", (d, i) => xScale(d.ROI))
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
+            .attr("cx", (d, i) => xScale(d.popularity))
             .attr("cy", (d, i) => yScale(d.vote_average))
             .attr("style", "opacity: 0")
             .on("mouseover", function (event, d) {
@@ -139,9 +139,9 @@
                 // group text color
                 h4_group.text(d.cast_names)
                     .style("color", "hsl(" + makeColor(group_names.indexOf(d.cast_names), totalGroups) + ", 100%, 50% )");
-                p_xAxis.text("Rate Of Income: " + d.ROI);
-                p_yAxis.text("Average Rating: " + d.vote_average);
-                p_dotSize.text("Popularity: " + Math.round(d.popularity*10)/10);
+                p_xAxis.text("Average Rating: " + d.vote_average);
+                p_yAxis.text("Popularity: " + Math.round(d.popularity*10)/10);
+                p_dotSize.text("Rate Of Income: " + d.ROI);
             })
             .on("mouseout", function (d) {
                 div.transition()
@@ -159,11 +159,11 @@
 
         svg.append("text")
             .attr("transform",
-                "translate(" + (w / 2 + 20)  + " ," +
-                (h - 3) + ")")
+                "translate(" + (w / 2) + " ," +
+                (h - 10) + ")")
             .style("text-anchor", "middle")
             .style("font-size", "30px")
-            .text("ROI");
+            .text("popularity");
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(' + padding + ', 0)')
@@ -177,7 +177,7 @@
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .style("font-size", "30px")
-            .text("Average . Rating .");
+            .text("Average . . Rating");
 
         // run bubble set IMMEDIATELY after d3.js finish (because d3.csv is asyncronous)
         startBubbleSet();
@@ -298,7 +298,7 @@
         var divnode4 = document.createElement('div');
         divnode4.style.display = "flex";
         bodynode.append(divnode4);
-
+        
         paths.forEach(function callback(path, index) {
             var checkbox = document.createElement('input');
             checkbox.type = "checkbox";
@@ -317,7 +317,7 @@
             })
             checkbox.click();
             if(index != 0) checkbox.click();
-
+            
 
             var label = document.createElement('label')
             label.appendChild(document.createTextNode(cast_names[index]));
@@ -339,6 +339,8 @@
             div.appendChild(document.createElement('br'));
         });
     }
+
+
 
 </script>
 

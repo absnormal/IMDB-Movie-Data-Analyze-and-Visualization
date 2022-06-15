@@ -39,6 +39,7 @@
     input[type="checkbox"] {
         transform:scale(3);
     }
+
     label {
         font-size: 2em;
     }
@@ -80,7 +81,7 @@
     var group_names = ['before_2000', '2001~2005', '2006~2010', '2011~2016'];
     var totalGroups = group_names.length;
 
-    dataurl = "./data/tmdb_5000_movies_cleaned_year.csv";
+    dataurl = "../data/tmdb_5000_movies_cleaned_year.csv";
 
 
     // Generate Random Color distinguishable to Humans
@@ -94,25 +95,25 @@
         dataset = data;
         dataset2 = data;
 
-        var Xmax = 100, Xmin = -93
+        var Xmax = 1000/*170*/, Xmin = 2
 
         var Ymax = d3.max(dataset, function (d) { return d.vote_average }),
             Ymin = d3.min(dataset, function (d) { return d.vote_average });
 
-        var xScale = d3.scaleLinear()
-            .domain([Xmin-10, Xmax])
+        var xScale = d3.scaleLog()
+            .domain([Xmin, Xmax])
             .range([padding, w - padding]);
 
         yScale = d3.scaleLinear()
-            .domain([Ymin-1, Ymax])
+            .domain([Ymin, Ymax])
             .range([h - padding, padding]);
 
         // color circle for bubbleSet
         svg.selectAll('text.labels').data(dataset).enter()
             .append('circle')
             // make smallest vs larger 1:5
-            .attr("r", (d, i) => (Number(d.popularity)+125)/125 * minRadius)
-            .attr("cx", (d, i) => xScale(d.ROI))
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
+            .attr("cx", (d, i) => xScale(d.popularity))
             .attr("cy", (d, i) => yScale(d.vote_average))
             .attr("class", (d, i) => d.release_year.replaceAll("," , ""))
             .attr("style", (d, i) => "fill: hsl(" + makeColor(group_names.indexOf(d.release_year), totalGroups) + ", 100%, 50% )");
@@ -124,8 +125,8 @@
         // invisible circle for tooltop
         svg.selectAll('text.values').data(dataset2).enter()
             .append('circle')
-            .attr("r", (d, i) => (Number(d.popularity)+46.25)/46.25 * minRadius)
-            .attr("cx", (d, i) => xScale(d.ROI))
+            .attr("r", (d, i) => (Number(d.ROI)+150)/50 * minRadius)
+            .attr("cx", (d, i) => xScale(d.popularity))
             .attr("cy", (d, i) => yScale(d.vote_average))
             .attr("style", "opacity: 0")
             .on("mouseover", function (event, d) {
@@ -133,15 +134,15 @@
                     .duration(200)
                     .style("opacity", .9)
                     // for scale of mainpage: event.pageXY/body.scale
-                    .style("left", (event.pageX/0.47)-500 + "px")
+                    .style("left", (event.pageX/0.47) + "px")
                     .style("top", (event.pageY/0.47) + "px");
                 h3_title.text(d.title);
                 // group text color
                 h4_group.text(d.release_year)
                     .style("color", "hsl(" + makeColor(group_names.indexOf(d.release_year), totalGroups) + ", 100%, 50% )");
-                p_xAxis.text("Rate Of Income: " + d.ROI);
+                p_xAxis.text("Popularity: " + Math.round(d.popularity*10)/10);
                 p_yAxis.text("Average Rating: " + d.vote_average);
-                p_dotSize.text("Popularity: " + Math.round(d.popularity*10)/10);
+                p_dotSize.text("Rate Of Income: " + d.ROI);
             })
             .on("mouseout", function (d) {
                 div.transition()
@@ -163,7 +164,7 @@
                 (h - 10) + ")")
             .style("text-anchor", "middle")
             .style("font-size", "30px")
-            .text("ROI");
+            .text("popularity");
 
         svg.append('g').attr('class', 'axis')
             .attr('transform', 'translate(' + padding + ', 0)')
@@ -192,7 +193,7 @@
     // bubble-sets start
     function startBubbleSet() {
         // generate bubble sets, variable of bubblesets
-        var pad =  3;
+        var pad = 3;
         var bubbles = new BubbleSet();
 
         var svgnode = document.getElementsByClassName('svg')[0];
